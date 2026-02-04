@@ -11,7 +11,8 @@
 body{
   background:#0b0b0b;
   color:#fff;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
+  text-align:center;
 }
 .container{
   max-width:800px;
@@ -55,10 +56,8 @@ th{
 }
 </style>
 </head>
-
 <body>
 <div class="container">
-
 <h2>🔐 ADMIN PANEL RODA PUTAR</h2>
 
 <div class="card">
@@ -104,7 +103,6 @@ th{
     <tbody id="history"></tbody>
   </table>
 </div>
-
 </div>
 
 <script>
@@ -128,22 +126,26 @@ function buatVoucher(){
   db.ref("vouchers/"+k).set({
     prize: h,
     used: false
+  }, err=>{
+    if(err) alert("Gagal menyimpan voucher");
+    else alert("Voucher "+k+" berhasil dibuat!");
   });
 
   kode.value="";
 }
 
 function loadVoucher(){
-  db.ref("vouchers").on("value",snap=>{
+  db.ref("vouchers").on("value", snap=>{
     let html="";
     snap.forEach(v=>{
       const d=v.val();
-      html+=`
-      <tr>
+      html+=`<tr>
         <td>${v.key}</td>
         <td>${d.prize}</td>
         <td>${d.used?"USED":"AKTIF"}</td>
-        <td><button onclick="hapus('${v.key}')">Hapus</button></td>
+        <td>
+          <button onclick="hapus('${v.key}')">Hapus</button>
+        </td>
       </tr>`;
     });
     voucherList.innerHTML=html;
@@ -157,16 +159,15 @@ function hapus(k){
 }
 
 function loadHistory(){
-  db.ref("spin_history").limitToLast(20).on("value",snap=>{
+  db.ref("spin_history").limitToLast(20).on("value", snap=>{
     let html="";
     snap.forEach(h=>{
       const d=h.val();
-      html+=`
-      <tr>
+      html+=`<tr>
         <td>${d.userId}</td>
         <td>${d.voucher}</td>
         <td>${d.prize}</td>
-        <td>${d.time}</td>
+        <td>${new Date(d.time).toLocaleString("id-ID")}</td>
       </tr>`;
     });
     history.innerHTML=html;

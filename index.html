@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel Roda Putar</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body{
+  background:#0b0b0b;
+  color:#fff;
+  font-family:Arial;
+}
+.container{
+  max-width:800px;
+  margin:auto;
+  padding:20px;
+}
+h2{
+  color:gold;
+  text-shadow:0 0 10px gold;
+}
+.card{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+  box-shadow:0 0 15px #000;
+}
+input,select,button{
+  padding:10px;
+  margin:5px 0;
+  width:100%;
+  border-radius:8px;
+  border:none;
+}
+button{
+  background:linear-gradient(45deg,gold,orange);
+  font-weight:bold;
+  cursor:pointer;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+}
+th{
+  background:#222;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>🔐 ADMIN PANEL RODA PUTAR</h2>
+
+<div class="card">
+  <h3>Buat Voucher</h3>
+  <input id="kode" placeholder="Kode Voucher (contoh: VIP100)">
+  <select id="hadiah">
+    <option>Rp 5.000</option>
+    <option>Rp 10.000</option>
+    <option>Rp 25.000</option>
+    <option>Rp 50.000</option>
+    <option>Rp 100.000</option>
+    <option>Rp 500.000</option>
+  </select>
+  <button onclick="buatVoucher()">Simpan Voucher</button>
+</div>
+
+<div class="card">
+  <h3>Daftar Voucher</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Kode</th>
+        <th>Hadiah</th>
+        <th>Status</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="voucherList"></tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Riwayat Spin</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Voucher</th>
+        <th>Hadiah</th>
+        <th>Waktu</th>
+      </tr>
+    </thead>
+    <tbody id="history"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyDlpuf_uIlpmr2ybAqpJ2GTTRW-t86PGf0",
+  authDomain: "hadiahnatal-a033b.firebaseapp.com",
+  databaseURL: "https://hadiahnatal-a033b-default-rtdb.firebaseio.com",
+  projectId: "hadiahnatal-a033b",
+  storageBucket: "hadiahnatal-a033b.appspot.com",
+  messagingSenderId: "577153304596",
+  appId: "1:577153304596:web:5f255e886a379ccb12bf01"
+});
+
+const db = firebase.database();
+
+function buatVoucher(){
+  const k = kode.value.trim();
+  const h = hadiah.value;
+  if(!k) return alert("Kode kosong");
+
+  db.ref("vouchers/"+k).set({
+    prize: h,
+    used: false
+  });
+
+  kode.value="";
+}
+
+function loadVoucher(){
+  db.ref("vouchers").on("value",snap=>{
+    let html="";
+    snap.forEach(v=>{
+      const d=v.val();
+      html+=`
+      <tr>
+        <td>${v.key}</td>
+        <td>${d.prize}</td>
+        <td>${d.used?"USED":"AKTIF"}</td>
+        <td><button onclick="hapus('${v.key}')">Hapus</button></td>
+      </tr>`;
+    });
+    voucherList.innerHTML=html;
+  });
+}
+
+function hapus(k){
+  if(confirm("Hapus voucher "+k+" ?")){
+    db.ref("vouchers/"+k).remove();
+  }
+}
+
+function loadHistory(){
+  db.ref("spin_history").limitToLast(20).on("value",snap=>{
+    let html="";
+    snap.forEach(h=>{
+      const d=h.val();
+      html+=`
+      <tr>
+        <td>${d.userId}</td>
+        <td>${d.voucher}</td>
+        <td>${d.prize}</td>
+        <td>${d.time}</td>
+      </tr>`;
+    });
+    history.innerHTML=html;
+  });
+}
+
+loadVoucher();
+loadHistory();
+</script>
+</body>
+</html>

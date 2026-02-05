@@ -91,6 +91,7 @@ td{padding:8px; border-bottom:1px solid #333; text-align:center;}
     <input id="code" placeholder="Kode Voucher (contoh: VCR123)">
     <select id="prize">
       <option value="">Pilih Hadiah</option>
+      <!-- Hadiah nominal -->
       <option>RP.5.000</option>
       <option>RP.10.000</option>
       <option>RP.15.000</option>
@@ -99,6 +100,10 @@ td{padding:8px; border-bottom:1px solid #333; text-align:center;}
       <option>RP.100.000</option>
       <option>RP.250.000</option>
       <option>RP.500.000</option>
+      <!-- Hadiah spesial -->
+      <option>Honda PCX 2020</option>
+      <option>Tiket Liburan</option>
+      <option>iPhone 17 Pro</option>
     </select>
     <button onclick="createVoucher()">➕ BUAT VOUCHER</button>
   </div>
@@ -175,7 +180,8 @@ db.ref("vouchers").on("value",snap=>{
         <td>${d.createdAt ? formatDate(d.createdAt) : "-"}</td>
         <td class="${d.used?'used':'free'}">${d.used?'USED':'READY'}</td>
         <td><button class="del" onclick="delVoucher('${v.key}')">HAPUS</button></td>
-      </tr>`;
+      </tr>
+    `;
   });
 });
 

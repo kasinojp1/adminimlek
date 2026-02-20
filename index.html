@@ -17,7 +17,7 @@ body{
 }
 
 .container{
-  max-width:800px;
+  max-width:850px;
   margin:40px auto;
   background:#4b0000;
   padding:30px;
@@ -78,6 +78,7 @@ button{
   align-items:center;
   padding:12px;
   border-bottom:1px solid rgba(255,255,255,0.2);
+  font-size:14px;
 }
 
 .status-ready{
@@ -99,7 +100,9 @@ button{
 
 <div class="input-box">
 <input id="kode" placeholder="Kode Voucher (contoh: VCR123)">
-<select id="hadiahSelect"></select>
+<select id="hadiahSelect">
+<option>Loading hadiah...</option>
+</select>
 <button class="btn-create" onclick="createVoucher()">BUAT VOUCHER</button>
 </div>
 
@@ -109,7 +112,7 @@ button{
 
 <script>
 
-/* === FIREBASE CONFIG (PAKAI YANG SAMA DENGAN RODA) === */
+/* ==== FIREBASE CONFIG (PAKAI CONFIG KAMU) ==== */
 firebase.initializeApp({
   apiKey:"AIzaSyDlpuf_uIlpmr2ybAqpJ2GTTRW-t86PGf0",
   authDomain:"hadiahnatal-a033b.firebaseapp.com",
@@ -119,43 +122,64 @@ firebase.initializeApp({
 
 const db = firebase.database();
 
-/* LOAD HADIAH */
-db.ref("settings/prizes").on("value",snap=>{
-  if(!snap.exists()) return;
-  const prizes=snap.val();
-  const select=document.getElementById("hadiahSelect");
-  select.innerHTML="";
-  prizes.forEach(p=>{
-    select.innerHTML+=`<option value="${p}">${p}</option>`;
+/* =========================
+   LOAD HADIAH DARI RODA
+=========================*/
+db.ref("settings/wheelPrizes").on("value", snap => {
+
+  const select = document.getElementById("hadiahSelect");
+  select.innerHTML = "";
+
+  if(!snap.exists()){
+    select.innerHTML = "<option>Belum ada hadiah</option>";
+    return;
+  }
+
+  const prizes = snap.val();
+
+  prizes.forEach(prize => {
+    select.innerHTML += `<option value="${prize}">${prize}</option>`;
   });
+
 });
 
-/* BUAT VOUCHER */
+/* =========================
+   BUAT VOUCHER
+=========================*/
 function createVoucher(){
-  const kode=document.getElementById("kode").value.trim().toUpperCase();
-  const hadiah=document.getElementById("hadiahSelect").value;
 
-  if(!kode) return alert("Masukkan kode voucher!");
+  const kode = document.getElementById("kode").value.trim().toUpperCase();
+  const hadiah = document.getElementById("hadiahSelect").value;
 
-  db.ref("vouchers/"+kode).set({
-    prize:hadiah,
-    used:false,
-    createdAt:new Date().toLocaleDateString("id-ID")
+  if(!kode){
+    alert("Masukkan kode voucher!");
+    return;
+  }
+
+  db.ref("vouchers/" + kode).set({
+    prize: hadiah,
+    used: false,
+    createdAt: new Date().toLocaleDateString("id-ID")
   });
 
   alert("Voucher berhasil dibuat!");
-  document.getElementById("kode").value="";
+  document.getElementById("kode").value = "";
+
 }
 
-/* LOAD VOUCHER */
-db.ref("vouchers").on("value",snap=>{
-  const list=document.getElementById("voucherList");
-  list.innerHTML="";
+/* =========================
+   LOAD VOUCHER
+=========================*/
+db.ref("vouchers").on("value", snap => {
 
-  snap.forEach(child=>{
-    const data=child.val();
+  const list = document.getElementById("voucherList");
+  list.innerHTML = "";
 
-    list.innerHTML+=`
+  snap.forEach(child => {
+
+    const data = child.val();
+
+    list.innerHTML += `
       <div class="row">
         <div>${child.key}</div>
         <div>${data.prize}</div>
@@ -171,13 +195,18 @@ db.ref("vouchers").on("value",snap=>{
       </div>
     `;
   });
+
 });
 
-/* HAPUS */
+/* =========================
+   HAPUS VOUCHER
+=========================*/
 function deleteVoucher(kode){
-  if(confirm("Hapus voucher "+kode+"?")){
-    db.ref("vouchers/"+kode).remove();
+
+  if(confirm("Hapus voucher " + kode + "?")){
+    db.ref("vouchers/" + kode).remove();
   }
+
 }
 
 </script>
